@@ -21,11 +21,11 @@ type MasterChef @entity {
   # Start block
   startBlock: BigInt!
 
-  # Sushi
-  sushi: Bytes!
+  # Unic
+  unic: Bytes!
 
-  # Sushi per block
-  sushiPerBlock: BigInt!
+  # Unic per block
+  unicPerBlock: BigInt!
 
   # Total allocation point
   totalAllocPoint: BigInt!
@@ -36,20 +36,20 @@ type MasterChef @entity {
   # Pool count
   poolCount: BigInt!
 
-  # SLP Balance
-  slpBalance: BigDecimal!
+  # UPT Balance
+  uptBalance: BigDecimal!
 
-  # SLP Age
-  slpAge: BigDecimal!
+  # UPT Age
+  uptAge: BigDecimal!
 
-  # SLP Removed
-  slpAgeRemoved: BigDecimal!
+  # UPT Removed
+  uptAgeRemoved: BigDecimal!
 
-  # SLP Deposited
-  slpDeposited: BigDecimal!
+  # UPT Deposited
+  uptDeposited: BigDecimal!
 
-  # SLP Withdrawn
-  slpWithdrawn: BigDecimal!
+  # UPT Withdrawn
+  uptWithdrawn: BigDecimal!
 
   # History
   history: [History!]! @derivedFrom(field: "owner")
@@ -65,20 +65,20 @@ type History @entity {
   # Owner (MasterChef, Pool, or User).
   owner: MasterChef!
 
-  # SLP Balance
-  slpBalance: BigDecimal!
+  # UPT Balance
+  uptBalance: BigDecimal!
 
-  # SLP Age
-  slpAge: BigDecimal!
+  # UPT Age
+  uptAge: BigDecimal!
 
-  # SLP Removed
-  slpAgeRemoved: BigDecimal!
+  # UPT Removed
+  uptAgeRemoved: BigDecimal!
 
-  # SLP Deposited
-  slpDeposited: BigDecimal!
+  # UPT Deposited
+  uptDeposited: BigDecimal!
 
-  # SLP Withdrawn
-  slpWithdrawn: BigDecimal!
+  # UPT Withdrawn
+  uptWithdrawn: BigDecimal!
 
   # Timestamp
   timestamp: BigInt!
@@ -104,10 +104,10 @@ type Pool @entity {
   # Last reward block
   lastRewardBlock: BigInt!
 
-  # Accumulated sushi per share
-  accSushiPerShare: BigInt!
+  # Accumulated unic per share
+  accUnicPerShare: BigInt!
 
-  # SLP token balance
+  # UPT token balance
   balance: BigInt!
 
   # Pool users
@@ -116,20 +116,20 @@ type Pool @entity {
   # User count
   userCount: BigInt!
 
-  # SLP Balance
-  slpBalance: BigDecimal!
+  # UPT Balance
+  uptBalance: BigDecimal!
 
-  # SLP Age
-  slpAge: BigDecimal!
+  # UPT Age
+  uptAge: BigDecimal!
 
-  # SLP Removed
-  slpAgeRemoved: BigDecimal!
+  # UPT Removed
+  uptAgeRemoved: BigDecimal!
 
-  # SLP Deposited
-  slpDeposited: BigDecimal!
+  # UPT Deposited
+  uptDeposited: BigDecimal!
 
-  # SLP Withdrawn
-  slpWithdrawn: BigDecimal!
+  # UPT Withdrawn
+  uptWithdrawn: BigDecimal!
 
   # Timestamp
   timestamp: BigInt!
@@ -146,11 +146,11 @@ type Pool @entity {
   # Exit USD
   exitUSD: BigDecimal!
 
-  # Sushi harvested
-  sushiHarvested: BigDecimal!
+  # Unic harvested
+  unicHarvested: BigDecimal!
 
-  # Sushi harvested
-  sushiHarvestedUSD: BigDecimal!
+  # Unic harvested
+  unicHarvestedUSD: BigDecimal!
 }
 
 type PoolHistory @entity {
@@ -160,20 +160,20 @@ type PoolHistory @entity {
   # Pool
   pool: Pool!
 
-  # SLP Balance
-  slpBalance: BigDecimal!
+  # UPT Balance
+  uptBalance: BigDecimal!
 
-  # SLP Age
-  slpAge: BigDecimal!
+  # UPT Age
+  uptAge: BigDecimal!
 
-  # SLP Removed
-  slpAgeRemoved: BigDecimal!
+  # UPT Removed
+  uptAgeRemoved: BigDecimal!
 
-  # SLP Deposited
-  slpDeposited: BigDecimal!
+  # UPT Deposited
+  uptDeposited: BigDecimal!
 
-  # SLP Withdrawn
-  slpWithdrawn: BigDecimal!
+  # UPT Withdrawn
+  uptWithdrawn: BigDecimal!
 
   # User Count
   userCount: BigInt!
@@ -190,11 +190,11 @@ type PoolHistory @entity {
   # Exit USD
   exitUSD: BigDecimal!
 
-  # Sushi harvested
-  sushiHarvested: BigDecimal!
+  # Unic harvested
+  unicHarvested: BigDecimal!
 
-  # Sushi harvested
-  sushiHarvestedUSD: BigDecimal!
+  # Unic harvested
+  unicHarvestedUSD: BigDecimal!
 }
 
 type User @entity {
@@ -228,20 +228,20 @@ type User @entity {
   # Exit USD
   exitUSD: BigDecimal!
 
-  # Sushi at lockup
-  sushiAtLockup: BigDecimal!
+  # Unic at lockup
+  unicAtLockup: BigDecimal!
 
-  # Sushi harvested
-  sushiHarvested: BigDecimal!
+  # Unic harvested
+  unicHarvested: BigDecimal!
 
-  # Sushi harvested
-  sushiHarvestedUSD: BigDecimal!
+  # Unic harvested
+  unicHarvestedUSD: BigDecimal!
 
-  # Sushi harvested since lockup
-  sushiHarvestedSinceLockup: BigDecimal!
+  # Unic harvested since lockup
+  unicHarvestedSinceLockup: BigDecimal!
 
-  # Sushi harvested since lockup USD
-  sushiHarvestedSinceLockupUSD: BigDecimal!
+  # Unic harvested since lockup USD
+  unicHarvestedSinceLockupUSD: BigDecimal!
 
   # Timestamp
   timestamp: BigInt!
