@@ -1,16 +1,16 @@
 specVersion: 0.0.3
 description: Lockup
-repository: https://github.com/sushiswap/sushiswap-subgraph
+repository: https://github.com/0xLeia/sushiswap-subgraph-rinkeby
 schema:
   file: ./lockup.graphql
 dataSources:
   - kind: ethereum/contract
     name: MasterChef
-    network: mainnet
+    network: rinkeby
     source:
-      address: '0xc2edad668740f1aa35e4d8f227fb8e17dca888cd'
+      address: '0xc63cbe3E3F99ffC8390E3f6B4CFFf27539ADB980'
       abi: MasterChef
-      startBlock: 10736242
+      startBlock: 7895330
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
