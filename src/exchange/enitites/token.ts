@@ -103,12 +103,12 @@ export function getName(address: Address): string {
 
 export function getTotalSupply(address: Address): BigInt {
   const contract = ERC20.bind(address)
-  let totalSupplyValue = null
+  let totalSupplyValue = BigInt.fromI32(0)
   const totalSupplyResult = contract.try_totalSupply()
   if (!totalSupplyResult.reverted) {
-    totalSupplyValue = totalSupplyResult as i32
+    totalSupplyValue = totalSupplyResult.value
   }
-  return BigInt.fromI32(totalSupplyValue as i32)
+  return totalSupplyValue
 }
 
 export function getDecimals(address: Address): BigInt {

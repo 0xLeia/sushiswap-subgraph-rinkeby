@@ -1,17 +1,17 @@
 import {
-  AddCall,
+  Add,
   Deposit,
-  DevCall,
+  Dev,
   EmergencyWithdraw,
-  MassUpdatePoolsCall,
-  MasterChef as MasterChefContract,
-  MigrateCall,
+  MassUpdatePools,
+  UnicFarm as UnicFarmContract,
+  //MigrateCall,
   OwnershipTransferred,
-  SetCall,
-  SetMigratorCall,
-  UpdatePoolCall,
+  Set,
+  //SetMigratorCall,
+  UpdatePool,
   Withdraw,
-} from '../generated/MasterChef/MasterChef'
+} from '../generated/UnicFarm/UnicFarm'
 import { Address, BigDecimal, BigInt, dataSource, ethereum, log } from '@graphprotocol/graph-ts'
 import {
   BIG_DECIMAL_1E12,
@@ -25,75 +25,76 @@ import {
   MASTER_CHEF_START_BLOCK,
   SUSHI_TOKEN_ADDRESS,
 } from './constants'
-import { History, MasterChef, Pool, PoolHistory, User } from '../generated/schema'
-import { getSushiPrice, getUSDRate } from './price'
+import { History, UnicFarm, Pool, PoolHistory, User } from '../generated/schema'
+import { getUnicPrice, getUSDRate } from './price'
 
-import { ERC20 as ERC20Contract } from '../generated/MasterChef/ERC20'
-import { Pair as PairContract } from '../generated/MasterChef/Pair'
+import { ERC20 as ERC20Contract } from '../generated/UnicFarm/ERC20'
+import { Pair as PairContract } from '../generated/UnicFarm/Pair'
 
-function getMasterChef(block: ethereum.Block): MasterChef {
-  let masterChef = MasterChef.load(MASTER_CHEF_ADDRESS.toHex())
+function getUnicFarm(block: ethereum.Block): UnicFarm {
+  let unicFarm = UnicFarm.load(MASTER_CHEF_ADDRESS.toHex())
 
-  if (masterChef === null) {
-    const contract = MasterChefContract.bind(MASTER_CHEF_ADDRESS)
-    masterChef = new MasterChef(MASTER_CHEF_ADDRESS.toHex())
-    masterChef.bonusMultiplier = contract.BONUS_MULTIPLIER()
-    masterChef.bonusEndBlock = contract.bonusEndBlock()
-    masterChef.devaddr = contract.devaddr()
-    masterChef.migrator = contract.migrator()
-    masterChef.owner = contract.owner()
+  if (unicFarm === null) {
+    const contract = UnicFarmContract.bind(MASTER_CHEF_ADDRESS)
+    unicFarm = new UnicFarm(MASTER_CHEF_ADDRESS.toHex())
+    unicFarm.mintRateMultiplier = contract.mintRateMultiplier()
+    unicFarm.mintRateDivider = contract.mintRateDivider()
+    unicFarm.devaddr = contract.devaddr()
+    // unicFarm.migrator = contract.migrator()
+    unicFarm.owner = contract.owner()
     // poolInfo ...
-    masterChef.startBlock = contract.startBlock()
-    masterChef.sushi = contract.sushi()
-    masterChef.sushiPerBlock = contract.sushiPerBlock()
-    masterChef.totalAllocPoint = contract.totalAllocPoint()
+    unicFarm.startBlock = contract.startBlock()
+    unicFarm.unic = contract.unic()
+    unicFarm.blocksPerTranche = contract.blocksPerTranche()
+    unicFarm.unicPerBlock = contract.unicPerBlock()
+    unicFarm.totalAllocPoint = contract.totalAllocPoint()
     // userInfo ...
-    masterChef.poolCount = BIG_INT_ZERO
+    unicFarm.poolCount = BIG_INT_ZERO
 
-    masterChef.slpBalance = BIG_DECIMAL_ZERO
-    masterChef.slpAge = BIG_DECIMAL_ZERO
-    masterChef.slpAgeRemoved = BIG_DECIMAL_ZERO
-    masterChef.slpDeposited = BIG_DECIMAL_ZERO
-    masterChef.slpWithdrawn = BIG_DECIMAL_ZERO
+    unicFarm.uptBalance = BIG_DECIMAL_ZERO
+    unicFarm.uptAge = BIG_DECIMAL_ZERO
+    unicFarm.uptAgeRemoved = BIG_DECIMAL_ZERO
+    unicFarm.uptDeposited = BIG_DECIMAL_ZERO
+    unicFarm.uptWithdrawn = BIG_DECIMAL_ZERO
 
-    masterChef.updatedAt = block.timestamp
+    unicFarm.updatedAt = block.timestamp
 
-    masterChef.save()
+    unicFarm.save()
   }
 
-  return masterChef as MasterChef
+  return unicFarm as UnicFarm
 }
 
 export function getPool(id: BigInt, block: ethereum.Block): Pool {
   let pool = Pool.load(id.toString())
 
   if (pool === null) {
-    const masterChef = getMasterChef(block)
+    const unicFarm = getUnicFarm(block)
 
-    const masterChefContract = MasterChefContract.bind(MASTER_CHEF_ADDRESS)
+    const unicFarmContract = UnicFarmContract.bind(MASTER_CHEF_ADDRESS)
 
     // Create new pool.
     pool = new Pool(id.toString())
 
     // Set relation
-    pool.owner = masterChef.id
+    pool.owner = unicFarm.id
 
-    const poolInfo = masterChefContract.poolInfo(masterChef.poolCount)
+    const poolInfo = unicFarmContract.poolInfo(unicFarm.poolCount)
 
     pool.pair = poolInfo.value0
     pool.allocPoint = poolInfo.value1
     pool.lastRewardBlock = poolInfo.value2
-    pool.accSushiPerShare = poolInfo.value3
+    pool.accUnicPerShare = poolInfo.value3
 
     // Total supply of LP tokens
     pool.balance = BIG_INT_ZERO
     pool.userCount = BIG_INT_ZERO
 
-    pool.slpBalance = BIG_DECIMAL_ZERO
-    pool.slpAge = BIG_DECIMAL_ZERO
-    pool.slpAgeRemoved = BIG_DECIMAL_ZERO
-    pool.slpDeposited = BIG_DECIMAL_ZERO
-    pool.slpWithdrawn = BIG_DECIMAL_ZERO
+    pool.uptBalance = BIG_DECIMAL_ZERO
+    pool.uptAge = BIG_DECIMAL_ZERO
+    pool.uptAgeRemoved = BIG_DECIMAL_ZERO
+    pool.uptDeposited = BIG_DECIMAL_ZERO
+    pool.uptWithdrawn = BIG_DECIMAL_ZERO
 
     pool.timestamp = block.timestamp
     pool.block = block.number
@@ -101,8 +102,8 @@ export function getPool(id: BigInt, block: ethereum.Block): Pool {
     pool.updatedAt = block.timestamp
     pool.entryUSD = BIG_DECIMAL_ZERO
     pool.exitUSD = BIG_DECIMAL_ZERO
-    pool.sushiHarvested = BIG_DECIMAL_ZERO
-    pool.sushiHarvestedUSD = BIG_DECIMAL_ZERO
+    pool.unicHarvested = BIG_DECIMAL_ZERO
+    pool.unicHarvestedUSD = BIG_DECIMAL_ZERO
     pool.save()
   }
 
@@ -119,11 +120,11 @@ function getHistory(owner: string, block: ethereum.Block): History {
   if (history === null) {
     history = new History(id)
     history.owner = owner
-    history.slpBalance = BIG_DECIMAL_ZERO
-    history.slpAge = BIG_DECIMAL_ZERO
-    history.slpAgeRemoved = BIG_DECIMAL_ZERO
-    history.slpDeposited = BIG_DECIMAL_ZERO
-    history.slpWithdrawn = BIG_DECIMAL_ZERO
+    history.uptBalance = BIG_DECIMAL_ZERO
+    history.uptAge = BIG_DECIMAL_ZERO
+    history.uptAgeRemoved = BIG_DECIMAL_ZERO
+    history.uptDeposited = BIG_DECIMAL_ZERO
+    history.uptWithdrawn = BIG_DECIMAL_ZERO
     history.timestamp = block.timestamp
     history.block = block.number
   }
@@ -141,17 +142,17 @@ function getPoolHistory(pool: Pool, block: ethereum.Block): PoolHistory {
   if (history === null) {
     history = new PoolHistory(id)
     history.pool = pool.id
-    history.slpBalance = BIG_DECIMAL_ZERO
-    history.slpAge = BIG_DECIMAL_ZERO
-    history.slpAgeRemoved = BIG_DECIMAL_ZERO
-    history.slpDeposited = BIG_DECIMAL_ZERO
-    history.slpWithdrawn = BIG_DECIMAL_ZERO
+    history.uptBalance = BIG_DECIMAL_ZERO
+    history.uptAge = BIG_DECIMAL_ZERO
+    history.uptAgeRemoved = BIG_DECIMAL_ZERO
+    history.uptDeposited = BIG_DECIMAL_ZERO
+    history.uptWithdrawn = BIG_DECIMAL_ZERO
     history.timestamp = block.timestamp
     history.block = block.number
     history.entryUSD = BIG_DECIMAL_ZERO
     history.exitUSD = BIG_DECIMAL_ZERO
-    history.sushiHarvested = BIG_DECIMAL_ZERO
-    history.sushiHarvestedUSD = BIG_DECIMAL_ZERO
+    history.unicHarvested = BIG_DECIMAL_ZERO
+    history.unicHarvestedUSD = BIG_DECIMAL_ZERO
   }
 
   return history as PoolHistory
@@ -169,11 +170,11 @@ export function getUser(pid: BigInt, address: Address, block: ethereum.Block): U
     user.address = address
     user.amount = BIG_INT_ZERO
     user.rewardDebt = BIG_INT_ZERO
-    user.sushiAtLockup = BIG_DECIMAL_ZERO
-    user.sushiHarvested = BIG_DECIMAL_ZERO
-    user.sushiHarvestedUSD = BIG_DECIMAL_ZERO
-    user.sushiHarvestedSinceLockup = BIG_DECIMAL_ZERO
-    user.sushiHarvestedSinceLockupUSD = BIG_DECIMAL_ZERO
+    user.unicAtLockup = BIG_DECIMAL_ZERO
+    user.unicHarvested = BIG_DECIMAL_ZERO
+    user.unicHarvestedUSD = BIG_DECIMAL_ZERO
+    user.unicHarvestedSinceLockup = BIG_DECIMAL_ZERO
+    user.unicHarvestedSinceLockupUSD = BIG_DECIMAL_ZERO
     user.entryUSD = BIG_DECIMAL_ZERO
     user.exitUSD = BIG_DECIMAL_ZERO
     user.timestamp = block.timestamp
@@ -184,54 +185,58 @@ export function getUser(pid: BigInt, address: Address, block: ethereum.Block): U
   return user as User
 }
 
-export function add(event: AddCall): void {
-  const masterChef = getMasterChef(event.block)
+export function add(event: Add): void {
+  const unicFarm = getUnicFarm(event.block)
+  const contract = UnicFarmContract.bind(MASTER_CHEF_ADDRESS)
 
-  log.info('Add pool #{}', [masterChef.poolCount.toString()])
+  log.info('Add pool #{}', [unicFarm.poolCount.toString()])
 
-  const pool = getPool(masterChef.poolCount, event.block)
+  const pool = getPool(unicFarm.poolCount, event.block)
 
-  // Update MasterChef.
-  masterChef.totalAllocPoint = masterChef.totalAllocPoint.plus(pool.allocPoint)
-  masterChef.poolCount = masterChef.poolCount.plus(BIG_INT_ONE)
-  masterChef.save()
+  // Update UnicFarm.
+  unicFarm.totalAllocPoint = unicFarm.totalAllocPoint.plus(pool.allocPoint)
+  unicFarm.poolCount = unicFarm.poolCount.plus(BIG_INT_ONE)
+  unicFarm.unicPerBlock = contract.unicPerBlock()
+  unicFarm.save()
 }
 
 // Calls
-export function set(call: SetCall): void {
+export function set(event: Set): void {
   log.info('Set pool id: {} allocPoint: {} withUpdate: {}', [
-    call.inputs._pid.toString(),
-    call.inputs._allocPoint.toString(),
-    call.inputs._withUpdate ? 'true' : 'false',
+    event.params.pid.toString(),
+    event.params.allocPoint.toString(),
+    event.params.withUpdate ? 'true' : 'false',
   ])
 
-  const pool = getPool(call.inputs._pid, call.block)
+  const pool = getPool(event.params.pid, event.block)
+  const contract = UnicFarmContract.bind(MASTER_CHEF_ADDRESS)
 
-  const masterChef = getMasterChef(call.block)
+  const unicFarm = getUnicFarm(event.block)
 
   // Update masterchef
-  masterChef.totalAllocPoint = masterChef.totalAllocPoint.plus(call.inputs._allocPoint.minus(pool.allocPoint))
-  masterChef.save()
+  unicFarm.totalAllocPoint = unicFarm.totalAllocPoint.plus(event.params.allocPoint.minus(pool.allocPoint))
+  unicFarm.unicPerBlock = contract.unicPerBlock()
+  unicFarm.save()
 
   // Update pool
-  pool.allocPoint = call.inputs._allocPoint
+  pool.allocPoint = event.params.allocPoint
   pool.save()
 }
 
-export function setMigrator(call: SetMigratorCall): void {
+/*export function setMigrator(call: SetMigratorCall): void {
   log.info('Set migrator to {}', [call.inputs._migrator.toHex()])
 
-  const masterChef = getMasterChef(call.block)
-  masterChef.migrator = call.inputs._migrator
-  masterChef.save()
+  const unicFarm = getUnicFarm(call.block)
+  unicFarm.migrator = call.inputs._migrator
+  unicFarm.save()
 }
 
 export function migrate(call: MigrateCall): void {
-  const masterChefContract = MasterChefContract.bind(MASTER_CHEF_ADDRESS)
+  const unicFarmContract = UnicFarmContract.bind(MASTER_CHEF_ADDRESS)
 
   const pool = getPool(call.inputs._pid, call.block)
 
-  const poolInfo = masterChefContract.poolInfo(call.inputs._pid)
+  const poolInfo = unicFarmContract.poolInfo(call.inputs._pid)
 
   const pair = poolInfo.value0
 
@@ -244,31 +249,31 @@ export function migrate(call: MigrateCall): void {
   pool.balance = balance
 
   pool.save()
-}
+}*/
 
-export function massUpdatePools(call: MassUpdatePoolsCall): void {
+export function massUpdatePools(event: MassUpdatePools): void {
   log.info('Mass update pools', [])
 }
 
-export function updatePool(call: UpdatePoolCall): void {
-  log.info('Update pool id {}', [call.inputs._pid.toString()])
+export function updatePool(event: UpdatePool): void {
+  log.info('Update pool id {}', [event.params.pid.toString()])
 
-  const masterChef = MasterChefContract.bind(MASTER_CHEF_ADDRESS)
-  const poolInfo = masterChef.poolInfo(call.inputs._pid)
-  const pool = getPool(call.inputs._pid, call.block)
+  const unicFarm = UnicFarmContract.bind(MASTER_CHEF_ADDRESS)
+  const poolInfo = unicFarm.poolInfo(event.params.pid)
+  const pool = getPool(event.params.pid, event.block)
   pool.lastRewardBlock = poolInfo.value2
-  pool.accSushiPerShare = poolInfo.value3
+  pool.accUnicPerShare = poolInfo.value3
   pool.save()
 }
 
-export function dev(call: DevCall): void {
-  log.info('Dev changed to {}', [call.inputs._devaddr.toHex()])
+export function dev(event: Dev): void {
+  log.info('Dev changed to {}', [event.params.devaddr.toHex()])
 
-  const masterChef = getMasterChef(call.block)
+  const unicFarm = getUnicFarm(event.block)
 
-  masterChef.devaddr = call.inputs._devaddr
+  unicFarm.devaddr = event.params.devaddr
 
-  masterChef.save()
+  unicFarm.save()
 }
 
 // Events
@@ -282,15 +287,15 @@ export function deposit(event: Deposit): void {
 
   const amount = event.params.amount.divDecimal(BIG_DECIMAL_1E18)
 
-  // log.info('{} has deposited {} slp tokens to pool #{}', [
+  // log.info('{} has deposited {} upt tokens to pool #{}', [
   //   event.params.user.toHex(),
   //   event.params.amount.toString(),
   //   event.params.pid.toString(),
   // ])
 
-  const masterChefContract = MasterChefContract.bind(MASTER_CHEF_ADDRESS)
+  const unicFarmContract = UnicFarmContract.bind(MASTER_CHEF_ADDRESS)
 
-  const poolInfo = masterChefContract.poolInfo(event.params.pid)
+  const poolInfo = unicFarmContract.poolInfo(event.params.pid)
 
   const pool = getPool(event.params.pid, event.block)
 
@@ -300,17 +305,17 @@ export function deposit(event: Deposit): void {
   pool.balance = pairContract.balanceOf(MASTER_CHEF_ADDRESS)
 
   pool.lastRewardBlock = poolInfo.value2
-  pool.accSushiPerShare = poolInfo.value3
+  pool.accUnicPerShare = poolInfo.value3
 
   const poolDays = event.block.timestamp.minus(pool.updatedAt).divDecimal(BigDecimal.fromString('86400'))
-  pool.slpAge = pool.slpAge.plus(poolDays.times(pool.slpBalance))
+  pool.uptAge = pool.uptAge.plus(poolDays.times(pool.uptBalance))
 
-  pool.slpDeposited = pool.slpDeposited.plus(amount)
-  pool.slpBalance = pool.slpBalance.plus(amount)
+  pool.uptDeposited = pool.uptDeposited.plus(amount)
+  pool.uptBalance = pool.uptBalance.plus(amount)
 
   pool.updatedAt = event.block.timestamp
 
-  const userInfo = masterChefContract.userInfo(event.params.pid, event.params.user)
+  const userInfo = unicFarmContract.userInfo(event.params.pid, event.params.user)
 
   const user = getUser(event.params.pid, event.params.user, event.block)
 
@@ -324,24 +329,24 @@ export function deposit(event: Deposit): void {
   if (event.block.number.gt(MASTER_CHEF_START_BLOCK) && user.amount.gt(BIG_INT_ZERO)) {
     const pending = user.amount
       .toBigDecimal()
-      .times(pool.accSushiPerShare.toBigDecimal())
+      .times(pool.accUnicPerShare.toBigDecimal())
       .div(BIG_DECIMAL_1E12)
       .minus(user.rewardDebt.toBigDecimal())
       .div(BIG_DECIMAL_1E18)
-    // log.info('Deposit: User amount is more than zero, we should harvest {} sushi', [pending.toString()])
+    // log.info('Deposit: User amount is more than zero, we should harvest {} unic', [pending.toString()])
     if (pending.gt(BIG_DECIMAL_ZERO)) {
       // log.info('Harvesting {} SUSHI', [pending.toString()])
-      const sushiHarvestedUSD = pending.times(getSushiPrice(event.block))
-      user.sushiHarvested = user.sushiHarvested.plus(pending)
-      user.sushiHarvestedUSD = user.sushiHarvestedUSD.plus(sushiHarvestedUSD)
+      const unicHarvestedUSD = pending.times(getUnicPrice(event.block))
+      user.unicHarvested = user.unicHarvested.plus(pending)
+      user.unicHarvestedUSD = user.unicHarvestedUSD.plus(unicHarvestedUSD)
       if (event.block.number.ge(LOCKUP_BLOCK_NUMBER)) {
-        user.sushiHarvestedSinceLockup = user.sushiHarvestedSinceLockup.plus(pending)
-        user.sushiHarvestedSinceLockupUSD = user.sushiHarvestedSinceLockupUSD.plus(sushiHarvestedUSD)
+        user.unicHarvestedSinceLockup = user.unicHarvestedSinceLockup.plus(pending)
+        user.unicHarvestedSinceLockupUSD = user.unicHarvestedSinceLockupUSD.plus(unicHarvestedUSD)
       }
-      pool.sushiHarvested = pool.sushiHarvested.plus(pending)
-      pool.sushiHarvestedUSD = pool.sushiHarvestedUSD.plus(sushiHarvestedUSD)
-      poolHistory.sushiHarvested = pool.sushiHarvested
-      poolHistory.sushiHarvestedUSD = pool.sushiHarvestedUSD
+      pool.unicHarvested = pool.unicHarvested.plus(pending)
+      pool.unicHarvestedUSD = pool.unicHarvestedUSD.plus(unicHarvestedUSD)
+      poolHistory.unicHarvested = pool.unicHarvested
+      poolHistory.unicHarvestedUSD = pool.unicHarvestedUSD
     }
   }
 
@@ -370,7 +375,7 @@ export function deposit(event: Deposit): void {
       const entryUSD = token0USD.plus(token1USD)
 
       // log.info(
-      //   'Token {} priceUSD: {} reserve: {} amount: {} / Token {} priceUSD: {} reserve: {} amount: {} - slp amount: {} total supply: {} share: {}',
+      //   'Token {} priceUSD: {} reserve: {} amount: {} / Token {} priceUSD: {} reserve: {} amount: {} - upt amount: {} total supply: {} share: {}',
       //   [
       //     token0.symbol(),
       //     token0PriceUSD.toString(),
@@ -409,26 +414,28 @@ export function deposit(event: Deposit): void {
   user.save()
   pool.save()
 
-  const masterChef = getMasterChef(event.block)
+  const unicFarm = getUnicFarm(event.block)
+  const contract = UnicFarmContract.bind(MASTER_CHEF_ADDRESS)
 
-  const masterChefDays = event.block.timestamp.minus(masterChef.updatedAt).divDecimal(BigDecimal.fromString('86400'))
-  masterChef.slpAge = masterChef.slpAge.plus(masterChefDays.times(masterChef.slpBalance))
+  const unicFarmDays = event.block.timestamp.minus(unicFarm.updatedAt).divDecimal(BigDecimal.fromString('86400'))
+  unicFarm.uptAge = unicFarm.uptAge.plus(unicFarmDays.times(unicFarm.uptBalance))
 
-  masterChef.slpDeposited = masterChef.slpDeposited.plus(amount)
-  masterChef.slpBalance = masterChef.slpBalance.plus(amount)
+  unicFarm.uptDeposited = unicFarm.uptDeposited.plus(amount)
+  unicFarm.uptBalance = unicFarm.uptBalance.plus(amount)
+  unicFarm.unicPerBlock = contract.unicPerBlock()
 
-  masterChef.updatedAt = event.block.timestamp
-  masterChef.save()
+  unicFarm.updatedAt = event.block.timestamp
+  unicFarm.save()
 
   const history = getHistory(MASTER_CHEF_ADDRESS.toHex(), event.block)
-  history.slpAge = masterChef.slpAge
-  history.slpBalance = masterChef.slpBalance
-  history.slpDeposited = history.slpDeposited.plus(amount)
+  history.uptAge = unicFarm.uptAge
+  history.uptBalance = unicFarm.uptBalance
+  history.uptDeposited = history.uptDeposited.plus(amount)
   history.save()
 
-  poolHistory.slpAge = pool.slpAge
-  poolHistory.slpBalance = pool.balance.divDecimal(BIG_DECIMAL_1E18)
-  poolHistory.slpDeposited = poolHistory.slpDeposited.plus(amount)
+  poolHistory.uptAge = pool.uptAge
+  poolHistory.uptBalance = pool.balance.divDecimal(BIG_DECIMAL_1E18)
+  poolHistory.uptDeposited = poolHistory.uptDeposited.plus(amount)
   poolHistory.userCount = pool.userCount
   poolHistory.save()
 }
@@ -443,15 +450,15 @@ export function withdraw(event: Withdraw): void {
 
   const amount = event.params.amount.divDecimal(BIG_DECIMAL_1E18)
 
-  // log.info('{} has withdrawn {} slp tokens from pool #{}', [
+  // log.info('{} has withdrawn {} upt tokens from pool #{}', [
   //   event.params.user.toHex(),
   //   amount.toString(),
   //   event.params.pid.toString(),
   // ])
 
-  const masterChefContract = MasterChefContract.bind(MASTER_CHEF_ADDRESS)
+  const unicFarmContract = UnicFarmContract.bind(MASTER_CHEF_ADDRESS)
 
-  const poolInfo = masterChefContract.poolInfo(event.params.pid)
+  const poolInfo = unicFarmContract.poolInfo(event.params.pid)
 
   const pool = getPool(event.params.pid, event.block)
 
@@ -460,15 +467,15 @@ export function withdraw(event: Withdraw): void {
   const pairContract = PairContract.bind(poolInfo.value0)
   pool.balance = pairContract.balanceOf(MASTER_CHEF_ADDRESS)
   pool.lastRewardBlock = poolInfo.value2
-  pool.accSushiPerShare = poolInfo.value3
+  pool.accUnicPerShare = poolInfo.value3
 
   const poolDays = event.block.timestamp.minus(pool.updatedAt).divDecimal(BigDecimal.fromString('86400'))
-  const poolAge = pool.slpAge.plus(poolDays.times(pool.slpBalance))
-  const poolAgeRemoved = poolAge.div(pool.slpBalance).times(amount)
-  pool.slpAge = poolAge.minus(poolAgeRemoved)
-  pool.slpAgeRemoved = pool.slpAgeRemoved.plus(poolAgeRemoved)
-  pool.slpWithdrawn = pool.slpWithdrawn.plus(amount)
-  pool.slpBalance = pool.slpBalance.minus(amount)
+  const poolAge = pool.uptAge.plus(poolDays.times(pool.uptBalance))
+  const poolAgeRemoved = poolAge.div(pool.uptBalance).times(amount)
+  pool.uptAge = poolAge.minus(poolAgeRemoved)
+  pool.uptAgeRemoved = pool.uptAgeRemoved.plus(poolAgeRemoved)
+  pool.uptWithdrawn = pool.uptWithdrawn.plus(amount)
+  pool.uptBalance = pool.uptBalance.minus(amount)
   pool.updatedAt = event.block.timestamp
 
   const user = getUser(event.params.pid, event.params.user, event.block)
@@ -476,11 +483,11 @@ export function withdraw(event: Withdraw): void {
   if (event.block.number.gt(MASTER_CHEF_START_BLOCK) && user.amount.gt(BIG_INT_ZERO)) {
     const pending = user.amount
       .toBigDecimal()
-      .times(pool.accSushiPerShare.toBigDecimal())
+      .times(pool.accUnicPerShare.toBigDecimal())
       .div(BIG_DECIMAL_1E12)
       .minus(user.rewardDebt.toBigDecimal())
       .div(BIG_DECIMAL_1E18)
-    // log.info('Withdraw: User amount is more than zero, we should harvest {} sushi - block: {}', [
+    // log.info('Withdraw: User amount is more than zero, we should harvest {} unic - block: {}', [
     //   pending.toString(),
     //   event.block.number.toString(),
     // ])
@@ -490,21 +497,21 @@ export function withdraw(event: Withdraw): void {
       //   pending.toString(),
       //   getSushiPrice(event.block).toString(),
       // ])
-      const sushiHarvestedUSD = pending.times(getSushiPrice(event.block))
-      user.sushiHarvested = user.sushiHarvested.plus(pending)
-      user.sushiHarvestedUSD = user.sushiHarvestedUSD.plus(sushiHarvestedUSD)
+      const unicHarvestedUSD = pending.times(getUnicPrice(event.block))
+      user.unicHarvested = user.unicHarvested.plus(pending)
+      user.unicHarvestedUSD = user.unicHarvestedUSD.plus(unicHarvestedUSD)
       if (event.block.number.ge(LOCKUP_BLOCK_NUMBER)) {
-        user.sushiHarvestedSinceLockup = user.sushiHarvestedSinceLockup.plus(pending)
-        user.sushiHarvestedSinceLockupUSD = user.sushiHarvestedSinceLockupUSD.plus(sushiHarvestedUSD)
+        user.unicHarvestedSinceLockup = user.unicHarvestedSinceLockup.plus(pending)
+        user.unicHarvestedSinceLockupUSD = user.unicHarvestedSinceLockupUSD.plus(unicHarvestedUSD)
       }
-      pool.sushiHarvested = pool.sushiHarvested.plus(pending)
-      pool.sushiHarvestedUSD = pool.sushiHarvestedUSD.plus(sushiHarvestedUSD)
-      poolHistory.sushiHarvested = pool.sushiHarvested
-      poolHistory.sushiHarvestedUSD = pool.sushiHarvestedUSD
+      pool.unicHarvested = pool.unicHarvested.plus(pending)
+      pool.unicHarvestedUSD = pool.unicHarvestedUSD.plus(unicHarvestedUSD)
+      poolHistory.unicHarvested = pool.unicHarvested
+      poolHistory.unicHarvestedUSD = pool.unicHarvestedUSD
     }
   }
 
-  const userInfo = masterChefContract.userInfo(event.params.pid, event.params.user)
+  const userInfo = unicFarmContract.userInfo(event.params.pid, event.params.user)
 
   user.amount = userInfo.value0
   user.rewardDebt = userInfo.value1
@@ -562,30 +569,32 @@ export function withdraw(event: Withdraw): void {
   user.save()
   pool.save()
 
-  const masterChef = getMasterChef(event.block)
+  const unicFarm = getUnicFarm(event.block)
+  const contract = UnicFarmContract.bind(MASTER_CHEF_ADDRESS)
 
-  const days = event.block.timestamp.minus(masterChef.updatedAt).divDecimal(BigDecimal.fromString('86400'))
-  const slpAge = masterChef.slpAge.plus(days.times(masterChef.slpBalance))
-  const slpAgeRemoved = slpAge.div(masterChef.slpBalance).times(amount)
-  masterChef.slpAge = slpAge.minus(slpAgeRemoved)
-  masterChef.slpAgeRemoved = masterChef.slpAgeRemoved.plus(slpAgeRemoved)
+  const days = event.block.timestamp.minus(unicFarm.updatedAt).divDecimal(BigDecimal.fromString('86400'))
+  const uptAge = unicFarm.uptAge.plus(days.times(unicFarm.uptBalance))
+  const uptAgeRemoved = uptAge.div(unicFarm.uptBalance).times(amount)
+  unicFarm.uptAge = uptAge.minus(uptAgeRemoved)
+  unicFarm.uptAgeRemoved = unicFarm.uptAgeRemoved.plus(uptAgeRemoved)
+  unicFarm.unicPerBlock = contract.unicPerBlock()
 
-  masterChef.slpWithdrawn = masterChef.slpWithdrawn.plus(amount)
-  masterChef.slpBalance = masterChef.slpBalance.minus(amount)
-  masterChef.updatedAt = event.block.timestamp
-  masterChef.save()
+  unicFarm.uptWithdrawn = unicFarm.uptWithdrawn.plus(amount)
+  unicFarm.uptBalance = unicFarm.uptBalance.minus(amount)
+  unicFarm.updatedAt = event.block.timestamp
+  unicFarm.save()
 
   const history = getHistory(MASTER_CHEF_ADDRESS.toHex(), event.block)
-  history.slpAge = masterChef.slpAge
-  history.slpAgeRemoved = history.slpAgeRemoved.plus(slpAgeRemoved)
-  history.slpBalance = masterChef.slpBalance
-  history.slpWithdrawn = history.slpWithdrawn.plus(amount)
+  history.uptAge = unicFarm.uptAge
+  history.uptAgeRemoved = history.uptAgeRemoved.plus(uptAgeRemoved)
+  history.uptBalance = unicFarm.uptBalance
+  history.uptWithdrawn = history.uptWithdrawn.plus(amount)
   history.save()
 
-  poolHistory.slpAge = pool.slpAge
-  poolHistory.slpAgeRemoved = poolHistory.slpAgeRemoved.plus(slpAgeRemoved)
-  poolHistory.slpBalance = pool.balance.divDecimal(BIG_DECIMAL_1E18)
-  poolHistory.slpWithdrawn = poolHistory.slpWithdrawn.plus(amount)
+  poolHistory.uptAge = pool.uptAge
+  poolHistory.uptAgeRemoved = poolHistory.uptAgeRemoved.plus(uptAgeRemoved)
+  poolHistory.uptBalance = pool.balance.divDecimal(BIG_DECIMAL_1E18)
+  poolHistory.uptWithdrawn = poolHistory.uptWithdrawn.plus(amount)
   poolHistory.userCount = pool.userCount
   poolHistory.save()
 }

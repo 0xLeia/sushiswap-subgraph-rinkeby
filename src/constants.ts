@@ -20,19 +20,19 @@ export const BIG_INT_ZERO = BigInt.fromI32(0)
 
 export const LOCKUP_POOL_NUMBER = BigInt.fromI32(29)
 
-export const FACTORY_ADDRESS = Address.fromString('0xc0aee478e3658e2610c5f7a4a2e1777ce9e4f2ac')
+export const FACTORY_ADDRESS = Address.fromString('0x601F49Ea6e1d51674C75F6FC21Ce8a5c88d73d44')
 
 export const LOCKUP_BLOCK_NUMBER = BigInt.fromI32(10959148)
 
-export const MASTER_CHEF_ADDRESS = Address.fromString('0xc2edad668740f1aa35e4d8f227fb8e17dca888cd')
+export const MASTER_CHEF_ADDRESS = Address.fromString('0x525Efa1653445a2E4F43db63390680709CfF81b8')
 
-export const SUSHI_BAR_ADDRESS = Address.fromString('0x8798249c2e607446efb7ad49ec89dd1865ff4272')
+export const SUSHI_BAR_ADDRESS = Address.fromString('0x910C902ddfF09e6e777c60711b497866cc36F599')
 
-export const SUSHI_MAKER_ADDRESS = Address.fromString('0x6684977bbed67e101bb80fc07fccfba655c0a64f')
+export const SUSHI_MAKER_ADDRESS = Address.fromString('0x9803E527348F78d998fF85995dDe0776d10c8DAd')
 
-export const SUSHI_TOKEN_ADDRESS = Address.fromString('0x6b3595068778dd592e39a122f4f5a5cf09c90fe2')
+export const SUSHI_TOKEN_ADDRESS = Address.fromString('0xa621Ea89a9d9d9cb543344943Dc71E82C614d581')
 
-export const SUSHI_USDT_PAIR_ADDRESS = Address.fromString('0x680a025da7b1be2c204d7745e809919bce074026')
+export const SUSHI_USDT_PAIR_ADDRESS = Address.fromString('0xF40eDdD5652Ca16e2C97B93112a7498DCc47d81c')
 
 export const XSUSHI_USDC_PAIR_ADDRESS = Address.fromString('0xd597924b16cc1904d808285bc9044fd51ceeead7')
 
@@ -40,31 +40,19 @@ export const XSUSHI_WETH_PAIR_ADDRESS = Address.fromString('0x36e2fcccc59e5747ff
 
 export const NULL_CALL_RESULT_VALUE = '0x0000000000000000000000000000000000000000000000000000000000000001'
 
-export const USDC_WETH_PAIR = '0x397ff1542f962076d0bfe58ea045ffa2d347aca0'
+export const USDC_WETH_PAIR = '0x197ba3650edb7f29b4d726cfb0a09cf8b7e5e272'
 
-export const DAI_WETH_PAIR = '0xc3d03e4f041fd4cd388c549ee2a29a9e5075882f'
+export const DAI_WETH_PAIR = '0xb838e743415220fc0ab48698e6b2b08cdafc40b2'
 
-export const USDT_WETH_PAIR = '0x06da0fd433c1a5d7a4faa01111c044910a184553'
+export const USDT_WETH_PAIR = '0xF40eDdD5652Ca16e2C97B93112a7498DCc47d81c'
 
-export const SUSHI_USDT_PAIR = '0x680a025da7b1be2c204d7745e809919bce074026'
+export const SUSHI_USDT_PAIR = '0x8C79B8b0004236ea22CF616210c38428e8a26d3d'
 
 export const WHITELIST: string[] = [
-  '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2', // WETH
-  '0x6b175474e89094c44da98b954eedeac495271d0f', // DAI
-  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', // USDC
-  '0xdac17f958d2ee523a2206206994597c13d831ec7', // USDT
-  '0x0000000000085d4780b73119b644ae5ecd22b376', // TUSD
-  '0x5d3a536e4d6dbd6114cc1ead35777bab948e3643', // cDAI
-  '0x39aa39c021dfbae8fac545936693ac917d5e7563', // cUSDC
-  '0x86fadb80d8d2cff3c3680819e4da99c10232ba0f', // EBASE
-  '0x57ab1ec28d129707052df4df418d58a2d46d5f51', // sUSD
-  '0x9f8f72aa9304c8b593d555f12ef6589cc3a579a2', // MKR
-  '0xc00e94cb662c3520282e6f5717214004a7f26888', // COMP
-  '0x514910771af9ca656af840dff83e8264ecf986ca', //LINK
-  '0x960b236a07cf122663c4303350609a66a7b288c0', //ANT
-  '0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f', //SNX
-  '0x0bc529c00c6401aef6d220be8c6ea1667f6ad93e', //YFI
-  '0xdf5e0e81dff6faf3a7e52ba697820c5e32d806a8', // yCurv
+  '0xbcced5560e50b1e6bb592ad067817b2d2ee3f808', // uSTAR
+  '0x287596fb4c4c11e2c27c82d70fa7b2d0f09606e2', // uAXIE
+  '0x4dbcdf9b62e891a7cec5a2568c3f4faf9e8abe2b', // USDC
+  '0xc778417e063141139fce010982780140aa0cd5ab', // WETH
 ]
 
 // minimum liquidity required to count towards tracked volume for pairs with small # of Lps
@@ -73,20 +61,22 @@ export const MINIMUM_USD_THRESHOLD_NEW_PAIRS = BigDecimal.fromString('0')
 // minimum liquidity for price to get tracked
 export const MINIMUM_LIQUIDITY_THRESHOLD_ETH = BigDecimal.fromString('0')
 
-export const WETH_ADDRESS = Address.fromString('0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2')
+export const WETH_ADDRESS = Address.fromString('0xc778417E063141139Fce010982780140Aa0cD5Ab')
 
 export const SUSHISWAP_WETH_USDT_PAIR_ADDRESS = Address.fromString('0x06da0fd433c1a5d7a4faa01111c044910a184553')
 
 export const USDT_ADDRESS = Address.fromString('0xdac17f958d2ee523a2206206994597c13d831ec7')
 
-export const MASTER_CHEF_START_BLOCK = BigInt.fromI32(10750000)
+export const MASTER_CHEF_START_BLOCK = BigInt.fromI32(8061950)
 
-export const UNISWAP_FACTORY_ADDRESS = Address.fromString('0x5c69bee701ef814a2b6a3edd4b1652cb9cc5aa6f')
+export const SUSHISWAP_WETH_USDT_PAIR_DEPLOY_BLOCK = BigInt.fromI32(99999999)
 
-export const UNISWAP_SUSHI_ETH_PAIR_FIRST_LIQUDITY_BLOCK = BigInt.fromI32(10750005)
+export const UNISWAP_FACTORY_ADDRESS = Address.fromString('0x601F49Ea6e1d51674C75F6FC21Ce8a5c88d73d44')
 
-export const UNISWAP_WETH_USDT_PAIR_ADDRESS = Address.fromString('0x0d4a11d5eeaac28ec3f61d100daf4d40471f1852')
+export const UNISWAP_SUSHI_ETH_PAIR_FIRST_LIQUDITY_BLOCK = BigInt.fromI32(8079687)
 
-export const UNISWAP_SUSHI_ETH_PAIR_ADDRESS = Address.fromString('0xce84867c3c02b05dc570d0135103d3fb9cc19433')
+export const UNISWAP_WETH_USDT_PAIR_ADDRESS = Address.fromString('0xF40eDdD5652Ca16e2C97B93112a7498DCc47d81c')
 
-export const UNISWAP_SUSHI_USDT_PAIR_ADDRESS = Address.fromString('0xe3ffab89e53422f468be955e7011932efe80aa26')
+export const UNISWAP_SUSHI_ETH_PAIR_ADDRESS = Address.fromString('0x2163534B9Df0528828b020A877dE5EE374EeC306')
+
+export const UNISWAP_SUSHI_USDT_PAIR_ADDRESS = Address.fromString('0x8C79B8b0004236ea22CF616210c38428e8a26d3d')

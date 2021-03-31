@@ -5,7 +5,7 @@ schema:
   file: ./lockup.graphql
 dataSources:
   - kind: ethereum/contract
-    name: MasterChef
+    name: UnicFarm
     network: rinkeby
     source:
       address: '0xc63cbe3E3F99ffC8390E3f6B4CFFf27539ADB980'
@@ -21,15 +21,14 @@ dataSources:
         - User
       abis:
         - name: MasterChef
-          file: ../node_modules/@sushiswap/core/build/contracts/MasterChef.json
+          file: ../abis/UnicFarm.json
         - name: Pair
-          file: ../node_modules/@sushiswap/core/build/contracts/UniswapV2Pair.json
+          file: ../abis/UnicSwapV2Pair.json
       eventHandlers:
         - event: Deposit(indexed address,indexed uint256,uint256)
           handler: deposit
         - event: Withdraw(indexed address,indexed uint256,uint256)
           handler: withdraw
-      callHandlers:
-        - function: set(uint256,uint256,bool)
+        - event: Set(uint256,uint256,bool)
           handler: set
       file: ../src/lockup.ts

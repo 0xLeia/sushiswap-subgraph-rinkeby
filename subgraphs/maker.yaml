@@ -5,12 +5,12 @@ schema:
   file: ./maker.graphql
 dataSources:
   - kind: ethereum/contract
-    name: Maker
-    network: mainnet
+    name: UnicPumper
+    network: rinkeby
     source:
-      address: '0x795065dcc9f64b5614c407a6efdc400da6221fb0'
+      address: '0x9803E527348F78d998fF85995dDe0776d10c8DAd'
       abi: Pair
-      startBlock: 10833263
+      startBlock: 8061888
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -21,11 +21,11 @@ dataSources:
         - Serving
       abis:
         - name: Pair
-          file: ../node_modules/@sushiswap/core/build/contracts/UniswapV2Pair.json
+          file: ../abis/UnicSwapV2Pair.json
         - name: ERC20
-          file: ../node_modules/@sushiswap/core/build/contracts/ERC20.json
+          file: ../abis/ERC20.json
         - name: Factory
-          file: ../node_modules/@sushiswap/core/build/contracts/UniswapV2Factory.json
+          file: ../abis/UnicSwapV2Factory.json
       eventHandlers:
         - event: Swap(indexed address,uint256,uint256,uint256,uint256,indexed address)
           handler: served

@@ -2,14 +2,14 @@ import { Address, BigInt, ethereum, log } from '@graphprotocol/graph-ts'
 import { BIG_INT_ONE, BIG_INT_ZERO, LOCKUP_BLOCK_NUMBER, LOCKUP_POOL_NUMBER, MASTER_CHEF_ADDRESS } from './constants'
 import {
   Deposit,
-  MasterChef as MasterChefContract,
+  UnicFarm as UnicFarmContract,
   MasterChef__poolInfoResult,
   SetCall,
   Withdraw,
-} from '../generated/MasterChef/MasterChef'
+} from '../generated/UnicFarm/UnicFarm'
 import { Lockup, Pool, User } from '../generated/schema'
 
-import { Pair as PairContract } from '../generated/MasterChef/Pair'
+import { Pair as PairContract } from '../generated/UnicFarm/Pair'
 
 export function getUser(pid: BigInt, address: Address, block: ethereum.Block): User {
   const uid = address.toHex()
@@ -35,12 +35,12 @@ export function set(call: SetCall): void {
   if (call.inputs._pid == LOCKUP_POOL_NUMBER) {
     log.info('Alright stop, lockup time...', [])
 
-    const masterChefContract = MasterChefContract.bind(MASTER_CHEF_ADDRESS)
-    const poolLength = masterChefContract.poolLength()
+    const unicFarmContract = UnicFarmContract.bind(MASTER_CHEF_ADDRESS)
+    const poolLength = unicFarmContract.poolLength()
 
     const lockup = new Lockup('0')
     lockup.poolLength = poolLength
-    lockup.totalAllocPoint = masterChefContract.totalAllocPoint()
+    lockup.totalAllocPoint = unicFarmContract.totalAllocPoint()
     lockup.save()
 
     log.info('Saved lockup entity, before loop. Pool length: {}', [poolLength.toString()])
@@ -48,7 +48,7 @@ export function set(call: SetCall): void {
     for (let i = BIG_INT_ZERO, j = poolLength; i < j; i = i.plus(BIG_INT_ONE)) {
       log.warning('Setting pool state at lockup for pid {}', [i.toString()])
 
-      let poolInfoResult: ethereum.CallResult<MasterChef__poolInfoResult> = masterChefContract.try_poolInfo(i)
+      let poolInfoResult: ethereum.CallResult<MasterChef__poolInfoResult> = unicFarmContract.try_poolInfo(i)
 
       let poolInfo: MasterChef__poolInfoResult = null
 
@@ -72,8 +72,8 @@ export function set(call: SetCall): void {
 // Events
 export function deposit(event: Deposit): void {
   if (event.block.number.lt(LOCKUP_BLOCK_NUMBER)) {
-    const masterChefContract = MasterChefContract.bind(MASTER_CHEF_ADDRESS)
-    const userInfo = masterChefContract.userInfo(event.params.pid, event.params.user)
+    const unicFarmContract = UnicFarmContract.bind(MASTER_CHEF_ADDRESS)
+    const userInfo = unicFarmContract.userInfo(event.params.pid, event.params.user)
     const user = getUser(event.params.pid, event.params.user, event.block)
     user.amount = userInfo.value0
     user.rewardDebt = userInfo.value1
@@ -83,9 +83,9 @@ export function deposit(event: Deposit): void {
 
 export function withdraw(event: Withdraw): void {
   if (event.block.number.lt(LOCKUP_BLOCK_NUMBER)) {
-    const masterChefContract = MasterChefContract.bind(MASTER_CHEF_ADDRESS)
+    const unicFarmContract = UnicFarmContract.bind(MASTER_CHEF_ADDRESS)
     const user = getUser(event.params.pid, event.params.user, event.block)
-    const userInfo = masterChefContract.userInfo(event.params.pid, event.params.user)
+    const userInfo = unicFarmContract.userInfo(event.params.pid, event.params.user)
     user.amount = userInfo.value0
     user.rewardDebt = userInfo.value1
     user.save()

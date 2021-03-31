@@ -1,25 +1,28 @@
-# MasterChef
-type MasterChef @entity {
+# UnicFarm
+type UnicFarm @entity {
   # Contract address
   id: ID!
 
   # Bonus multiplier
-  bonusMultiplier: BigInt!
+  mintRateMultiplier: BigInt!
 
   # Bonus end block
-  bonusEndBlock: BigInt!
+  mintRateDivider: BigInt!
 
   # Dev fund address
   devaddr: Bytes!
 
   # Migrator
-  migrator: Bytes!
+  # migrator: Bytes!
 
   # Owner
   owner: Bytes!
 
   # Start block
   startBlock: BigInt!
+
+  # blocksPerTranche
+  blocksPerTranche: BigInt!
 
   # Unic
   unic: Bytes!
@@ -62,8 +65,8 @@ type History @entity {
   # Master chef id concatenated with timestamp
   id: ID!
 
-  # Owner (MasterChef, Pool, or User).
-  owner: MasterChef!
+  # Owner (UnicFarm, Pool, or User).
+  owner: UnicFarm!
 
   # UPT Balance
   uptBalance: BigDecimal!
@@ -89,11 +92,11 @@ type History @entity {
 
 # Pool
 type Pool @entity {
-  # Index of pool in poolInfo on MasterChef contract
+  # Index of pool in poolInfo on UnicFarm contract
   id: ID!
 
   # Owner
-  owner: MasterChef!
+  owner: UnicFarm!
 
   # Pair Liquidity Token Address
   pair: Bytes!

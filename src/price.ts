@@ -9,6 +9,7 @@ import {
   SUSHI_TOKEN_ADDRESS,
   SUSHI_USDT_PAIR_ADDRESS,
   UNISWAP_FACTORY_ADDRESS,
+  SUSHISWAP_WETH_USDT_PAIR_DEPLOY_BLOCK,
   UNISWAP_SUSHI_ETH_PAIR_FIRST_LIQUDITY_BLOCK,
   UNISWAP_SUSHI_USDT_PAIR_ADDRESS,
   UNISWAP_WETH_USDT_PAIR_ADDRESS,
@@ -24,7 +25,7 @@ export function getUSDRate(token: Address, block: ethereum.Block): BigDecimal {
   let usdt = BIG_DECIMAL_ONE
 
   if (token != USDT_ADDRESS) {
-    let address = block.number.le(BigInt.fromI32(10829344))
+    let address = block.number.le(SUSHISWAP_WETH_USDT_PAIR_DEPLOY_BLOCK)
       ? UNISWAP_WETH_USDT_PAIR_ADDRESS
       : SUSHISWAP_WETH_USDT_PAIR_ADDRESS
 
@@ -51,7 +52,7 @@ export function getEthRate(token: Address, block: ethereum.Block): BigDecimal {
 
   if (token != WETH_ADDRESS) {
     const factory = FactoryContract.bind(
-      block.number.le(BigInt.fromI32(10829344)) ? UNISWAP_FACTORY_ADDRESS : FACTORY_ADDRESS
+      block.number.le(SUSHISWAP_WETH_USDT_PAIR_DEPLOY_BLOCK) ? UNISWAP_FACTORY_ADDRESS : FACTORY_ADDRESS
     )
 
     const address = factory.getPair(token, WETH_ADDRESS)
@@ -76,17 +77,17 @@ export function getEthRate(token: Address, block: ethereum.Block): BigDecimal {
   return eth
 }
 
-export function getSushiPrice(block: ethereum.Block): BigDecimal {
+export function getUnicPrice(block: ethereum.Block): BigDecimal {
   if (block.number.lt(UNISWAP_SUSHI_ETH_PAIR_FIRST_LIQUDITY_BLOCK)) {
     // If before uniswap sushi-eth pair creation and liquidity added, return zero
     return BIG_DECIMAL_ZERO
-  } else if (block.number.lt(BigInt.fromI32(10800029))) {
+  } else if (block.number.lt(SUSHISWAP_WETH_USDT_PAIR_DEPLOY_BLOCK)) {
     // Else if before uniswap sushi-usdt pair creation (get price from eth sushi-eth pair above)
     return getUSDRate(SUSHI_TOKEN_ADDRESS, block)
   } else {
     // Else get price from either uni or sushi usdt pair depending on space-time
     const pair = PairContract.bind(
-      block.number.le(BigInt.fromI32(10829344)) ? UNISWAP_SUSHI_USDT_PAIR_ADDRESS : SUSHI_USDT_PAIR_ADDRESS
+      block.number.le(SUSHISWAP_WETH_USDT_PAIR_DEPLOY_BLOCK) ? UNISWAP_SUSHI_USDT_PAIR_ADDRESS : SUSHI_USDT_PAIR_ADDRESS
     )
     const reserves = pair.getReserves()
     return reserves.value1

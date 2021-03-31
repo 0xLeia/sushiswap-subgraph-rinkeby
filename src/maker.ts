@@ -6,23 +6,23 @@ import {
   SUSHI_BAR_ADDRESS,
   SUSHI_MAKER_ADDRESS,
 } from './constants'
-import { Maker, Server, Serving } from '../generated/schema'
+import { UnicPumper, Server, Serving } from '../generated/schema'
 
 import { ERC20 as ERC20Contract } from '../generated/Maker/ERC20'
 import { Factory as FactoryContract } from '../generated/Maker/Factory'
 import { Swap as SwapEvent } from '../generated/Maker/Pair'
 
-function getMaker(): Maker {
+function getUnicPumper(): UnicPumper {
   const id = SUSHI_MAKER_ADDRESS.toHex()
-  let maker = Maker.load(id)
+  let maker = UnicPumper.load(id)
 
   if (maker === null) {
-    maker = new Maker(id)
-    maker.sushiServed = BIG_DECIMAL_ZERO
+    maker = new UnicPumper(id)
+    maker.unicServed = BIG_DECIMAL_ZERO
     maker.save()
   }
 
-  return maker as Maker
+  return maker as UnicPumper
 }
 
 function getServer(address: Address): Server {
@@ -32,7 +32,7 @@ function getServer(address: Address): Server {
   if (server === null) {
     server = new Server(id)
     server.maker = SUSHI_MAKER_ADDRESS.toHex()
-    server.sushiServed = BIG_DECIMAL_ZERO
+    server.unicServed = BIG_DECIMAL_ZERO
     server.save()
   }
 
@@ -45,7 +45,7 @@ export function served(event: SwapEvent): void {
     return
   }
 
-  const maker = getMaker()
+  const maker = getUnicPumper()
 
   const server = getServer(event.transaction.from)
 
@@ -62,7 +62,7 @@ export function served(event: SwapEvent): void {
 
   const pair = factoryContract.getPair(token0, token1)
 
-  const sushiServed = event.params.amount0Out.divDecimal(BIG_DECIMAL_1E18)
+  const unicServed = event.params.amount0Out.divDecimal(BIG_DECIMAL_1E18)
 
   const id = pair.toHex().concat('-').concat(event.block.number.toString())
   const serving = new Serving(id)
@@ -74,18 +74,18 @@ export function served(event: SwapEvent): void {
   serving.token1 = token1
   serving.block = event.block.number
   serving.timestamp = event.block.timestamp
-  serving.sushiServed = sushiServed
+  serving.unicServed = unicServed
   serving.save()
 
-  server.sushiServed = server.sushiServed.plus(sushiServed)
+  server.unicServed = server.unicServed.plus(unicServed)
   server.save()
 
-  maker.sushiServed = maker.sushiServed.plus(sushiServed)
+  maker.unicServed = maker.unicServed.plus(unicServed)
   maker.save()
 
   log.info('{} served up {} Sushi for pair {}-{} at {}', [
     server.id,
-    sushiServed.toString(),
+    unicServed.toString(),
     token0Contract.symbol(),
     token1Contract.symbol(),
     serving.timestamp.toString(),

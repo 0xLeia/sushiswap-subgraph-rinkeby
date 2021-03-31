@@ -33,37 +33,11 @@ export function getSushiPrice(): BigDecimal {
 }
 
 export function getEthPrice(block: ethereum.Block = null): BigDecimal {
-  // TODO: We can can get weighted averages, but this will do for now.
-  // If block number is less than or equal to the last stablecoin migration (ETH-USDT), use uniswap eth price.
-  // After this last migration, we can use sushiswap pricing.
-  if (block !== null && block.number.le(BigInt.fromI32(10829344))) {
-    // Uniswap Factory
-    const uniswapFactory = FactoryContract.bind(Address.fromString('0x5c69bee701ef814a2b6a3edd4b1652cb9cc5aa6f'))
-
-    // ETH-USDT
-    const ethUsdtPair = uniswapFactory.getPair(
-      Address.fromString('0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'),
-      Address.fromString('0xdac17f958d2ee523a2206206994597c13d831ec7')
-    )
-
-    const ethUsdtPairContract = PairContract.bind(ethUsdtPair)
-
-    const ethUsdtReserves = ethUsdtPairContract.getReserves()
-
-    // TODO: Find out why I'm dividing by 1,000,000... (Oh, probably because USDT?)
-    const ethPrice = ethUsdtReserves.value1
-      .toBigDecimal()
-      .times(BIG_DECIMAL_1E18)
-      .div(ethUsdtReserves.value0.toBigDecimal())
-      .div(BigDecimal.fromString('1000000'))
-
-    return ethPrice
-  }
-
   // fetch eth prices for each stablecoin
   const daiPair = Pair.load(DAI_WETH_PAIR) // dai is token0
   const usdcPair = Pair.load(USDC_WETH_PAIR) // usdc is token0
   const usdtPair = Pair.load(USDT_WETH_PAIR) // usdt is token1
+    log.warning('usdc/weth pair...' + USDC_WETH_PAIR, [])
 
   // all 3 have been created, get the weighted average of them
   if (daiPair !== null && usdcPair !== null && usdtPair !== null) {
@@ -91,7 +65,7 @@ export function getEthPrice(block: ethereum.Block = null): BigDecimal {
 }
 
 export function findEthPerToken(token: Token): BigDecimal {
-  if (token.id == WETH_ADDRESS) {
+  if (token.id == WETH_ADDRESS.toHexString()) {
     return BIG_DECIMAL_ONE
   }
 

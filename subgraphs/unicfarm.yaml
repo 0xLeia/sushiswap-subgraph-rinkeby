@@ -1,35 +1,35 @@
 specVersion: 0.0.3
-description: Masterchef
+description: UnicFarm
 repository: https://github.com/sushiswap/sushiswap-subgraph
 schema:
-  file: ./masterchef.graphql
+  file: ./unicfarm.graphql
 dataSources:
   - kind: ethereum/contract
-    name: MasterChef
-    network: mainnet
+    name: UnicFarm
+    network: rinkeby
     source:
-      address: '0xc2edad668740f1aa35e4d8f227fb8e17dca888cd'
-      abi: MasterChef
-      startBlock: 10736242
+      address: '0x525Efa1653445a2E4F43db63390680709CfF81b8'
+      abi: UnicFarm
+      startBlock: 8061885
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
       language: wasm/assemblyscript
       entities:
-        - MasterChef
+        - UnicFarm
         - History
         - Pool
         - PoolHistory
         - User
       abis:
-        - name: MasterChef
-          file: ../node_modules/@sushiswap/core/build/contracts/MasterChef.json
+        - name: UnicFarm
+          file: ../abis/UnicFarm.json
         - name: Factory
-          file: ../node_modules/@sushiswap/core/build/contracts/UniswapV2Factory.json
+          file: ../abis/UnicSwapV2Factory.json
         - name: Pair
-          file: ../node_modules/@sushiswap/core/build/contracts/UniswapV2Pair.json
+          file: ../abis/UnicSwapV2Pair.json
         - name: ERC20
-          file: ../node_modules/@sushiswap/core/build/contracts/ERC20.json
+          file: ../abis/ERC20.json
       eventHandlers:
         - event: Deposit(indexed address,indexed uint256,uint256)
           handler: deposit
@@ -39,19 +39,14 @@ dataSources:
           handler: ownershipTransferred
         - event: Withdraw(indexed address,indexed uint256,uint256)
           handler: withdraw
-      callHandlers:
-        - function: add(uint256,address,bool)
+        - event: Add(uint256,address,bool)
           handler: add
-        - function: set(uint256,uint256,bool)
+        - event: Set(uint256,uint256,bool)
           handler: set
-        - function: massUpdatePools()
+        - event: MassUpdatePools()
           handler: massUpdatePools
-        - function: updatePool(uint256)
+        - event: UpdatePool(uint256)
           handler: updatePool
-        - function: setMigrator(address)
-          handler: setMigrator
-        - function: migrate(uint256)
-          handler: migrate
-        - function: dev(address)
+        - event: Dev(address)
           handler: dev
-      file: ../src/masterchef.ts
+      file: ../src/unicfarm.ts
